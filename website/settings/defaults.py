@@ -164,6 +164,7 @@ ADDONS_REQUESTED = [
     's3',
     'twofactor',
     'wiki',
+    'gdrive',
 ]
 
 ADDON_CATEGORIES = [
