@@ -88,7 +88,6 @@ class AddonModelMixin(StoredObject):
         model = addon_config.settings_models[self._name](owner=self)
         model.on_add()
         model.save()
-
         return True
 
     def get_or_add_addon(self, addon_name, **kwargs):

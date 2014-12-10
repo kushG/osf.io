@@ -71,6 +71,28 @@
         </div><!-- end container -->
     </div><!-- end watermarked -->
 
+% if not user_id:
+<div id="footerSlideIn">
+    <div class="container">
+        <div class="row">
+            <div class='col-sm-2 hidden-xs'>
+                <img class="logo" src="/static/img/circle_logo.png"></img>
+            </div>
+            <div class='col-sm-10 col-xs-12'>
+                <a data-bind="click: dismiss" class="close" href="#">&times;</a>
+                <h1>Start managing your projects on the OSF today.</h1>
+                <p>Free and easy to use, the Open Science Framework supports the entire research lifecycle: planning, execution, reporting, archiving, and discovery.</p>
+                <div>
+                    <a class="btn btn-primary" href="/login/">Create an Account</a>
+                    <a class="btn btn-primary" href="/getting-started/">Learn More</a>
+                    <a data-bind="click: dismiss">Hide this message</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+% endif
+
     <%include file="footer.mako"/>
 
         %if use_cdn:
@@ -95,18 +117,20 @@
             })();
             </script>
 
-            <script type="text/javascript">
+            <script>
 
-              var _gaq = _gaq || [];
-              _gaq.push(['_setAccount', 'UA-26813616-1']);
-              _gaq.push(['_trackPageview']);
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-              (function() {
-                var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-                var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-              })();
+            ga('create', 'UA-26813616-1', 'auto', {'allowLinker': true});
+            ga('require', 'linker');
+            ga('linker:autoLink', ['centerforopenscience.org'] );
+            ga('send', 'pageview');
+
             </script>
+
         %endif
 
         % if piwik_host:
@@ -133,9 +157,10 @@
                 });
             </script>
         % endif
-        % for url in js_bottom:
-        <script src="${url}"></script>
-        % endfor
+
+        <script src="/static/vendor/bower_components/dropzone/downloads/dropzone.min.js"></script>
+        <script src="/static/public/js/vendor.bundle.js"></script>
+        <script src="/static/public/js/base-page.js"></script>
         ${self.javascript_bottom()}
     </body>
 </html>
@@ -198,29 +223,4 @@
     <script>window.jQuery || document.write('<script src="/static/vendor/bower_components/jQuery/dist/jquery.min.js">\x3C/script>')</script>
     <script src="//code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
     <script>window.jQuery.ui || document.write('<script src="/static/vendor/bower_components/jquery-ui/ui/minified/jquery-ui.min.js">\x3C/script>')</script>
-    <script src="/static/vendor/bower_components/knockout/dist/knockout.js"></script>
-    <script src="/static/vendor/knockout-mapping/knockout.mapping.js"></script>
-    <script src="/static/vendor/knockout-punches/knockout.punches.min.js"></script>
-    <script src="/static/vendor/knockout-validation/knockout.validation.min.js"></script>
-##    <script src="/static/js/koHelpers.js"></script>
-
-    % for url in js_all:
-    <script src="${url}"></script>
-    % endfor
-
-    <script>
-        // Enable knockout punches
-        ko.punches.enableAll();
-        // Dependencies that can be loaded with scriptjs
-        $script(['/static/vendor/bower_components/zeroclipboard/ZeroClipboard.min.js'],
-            'zeroclipboard');
-        $script(['/static/vendor/bower_components/dropzone/downloads/dropzone.js'], 'dropzone');
-        $script(['/static/vendor/bower_components/treebeard/dist/treebeard.js'], 'treebeard');
-        $script(['/static/vendor/bower_components/typeahead.js/dist/typeahead.bundle.min.js'],'typeahead');
-        $script(['/static/vendor/bower_components/select2/select2.js'], 'select2');
-        $script(['/static/vendor/bower_components/handlebars/handlebars.min.js'],'handlebars');
-        $script(['/static/js/dropzone-patch.js']); // exports 'dropzone-patch'
-        $script(['/static/js/folderPicker.js']);  // exports 'folderPicker'
-    </script>
-
 </%def>

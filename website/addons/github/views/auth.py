@@ -39,7 +39,7 @@ def github_oauth_start(auth, **kwargs):
 
     user = auth.user
 
-    nid = kwargs.get('nid') or kwargs.get('pid')
+    nid = kwargs.get('nid') or kwargs.gxet('pid')
     node = models.Node.load(nid) if nid else None
 
     # Fail if node provided and user not contributor
