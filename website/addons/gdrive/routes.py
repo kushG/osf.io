@@ -56,20 +56,36 @@ api_routes = {
         ),
 
 
+        # Rule(
+        #     ['/settings/gdrive/auth'],
+        #     'post',
+        #     views.drive_auth,
+        #     json_renderer,
+        #     endpoint_suffix='_user'
+        # ),
         Rule(
-            ['/settings/gdrive/auth'],
+            ['/settings/gdrive/oauth/'],
             'post',
-            views.drive_auth,
+            views.drive_oauth_start,
             json_renderer,
             endpoint_suffix='_user'
         ),
 
+
         Rule(
-            ['/project/<pid>/gdrive/auth/',
-            '/project/<pid>/node/<nid>/gdrive/auth/',
+            ['/project/<pid>/gdrive/oauth/',
+            '/project/<pid>/node/<nid>/gdrive/oauth/',
             ],
             'post',
-            views.drive_auth,
+            views.drive_oauth_start,
+            json_renderer,
+        ),
+
+        Rule(
+            ['/addons/gdrive/callback/'
+            ],
+            'get',
+            views.drive_oauth_finish,
             json_renderer,
         ),
 
@@ -81,6 +97,14 @@ api_routes = {
             '/project/<pid>/node/<nid>/gdrive/config/'],
             'get',
             views.gdrive_config_get,
+            json_renderer
+        ),
+
+        Rule(
+            ['/project/<pid>/gdrive/get-children/',
+            '/project/<pid>/node/<nid>/gdrive/get-children/'],
+            'get',
+            views.get_children,
             json_renderer
         ),
 

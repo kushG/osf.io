@@ -21,7 +21,7 @@ CATEGORIES = ['storage']
 
 INCLUDE_JS = {
     'page': [],
-    'files': []
+    'files': ['gdrive-fangorn-config.js']
 }
 
 INCLUDE_CSS = {

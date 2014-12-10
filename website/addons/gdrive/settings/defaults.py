@@ -7,12 +7,17 @@ CLIENT_SECRET = '3furwLm0e5RND8ThImyGnI1J'
 OAUTH_SCOPE = ['https://www.googleapis.com/auth/drive']
 
 # Redirect URI for installed apps
-REDIRECT_URI = 'http://localhost:5000/auth/callback'
+REDIRECT_URI = 'http://localhost:5000/api/v1/addons/gdrive/callback/'
 
 # Path to the file to upload
 FILENAME = 'document.txt'
 
 API_KEY = 'AIzaSyBRRNjRqhiSsRCTfqD_f73M6P_yf4NrCH4'
+
+OAUTH_ACCESS_TOKEN = 'changeme'
+
+SERVICE =[]
+
 
 
 

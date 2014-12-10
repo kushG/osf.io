@@ -5,17 +5,19 @@
 from modularodm import fields
 from website.addons.base import AddonUserSettingsBase, AddonNodeSettingsBase
 
-
 class AddonGdriveUserSettings(AddonUserSettingsBase):
     """Stores user-specific information, including the Oauth access
     token.
     """
-    access_token = fields.StringField(required=False)
+    access_token = fields.StringField()
+    oauth_service = fields.StringField()
+
     # TODO
 
     @property
     def has_auth(self):
-        return bool(self.access_token)
+        return self.access_token is not None
+
 
     def clear(self):
         self.access_token = None
@@ -23,6 +25,7 @@ class AddonGdriveUserSettings(AddonUserSettingsBase):
 
 class AddonGdriveNodeSettings(AddonNodeSettingsBase):
 
+    user = fields.StringField()
     user_settings = fields.ForeignField(
         'addongdriveusersettings', backref='authorized'
     )

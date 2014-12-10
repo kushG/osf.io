@@ -8,9 +8,10 @@ def serialize_urls(node_settings):
     node = node_settings.owner
     urls = {
         # 'config': node.api_url_for('ctmdv_config_put'),
-        'create': node.api_url_for('drive_auth'),
+        'create': node.api_url_for('drive_oauth_start'),
         'importAuth': node.api_url_for('gdrive_import_user_auth'),
-        'deauthorize': node.api_url_for('gdrive_deauthorize')
+        'deauthorize': node.api_url_for('gdrive_deauthorize'),
+        'get_folders' : node.api_url_for('get_children')
 
     }
     return urls

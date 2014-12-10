@@ -70,35 +70,14 @@
 
 
         self.createAuth = function(){
-            $.getScript('https://apis.google.com/js/api.js?onload=onApiLoad', function()
-            {
-
-                gapi.load('auth', {'callback': onAuthApiLoad});
-                gapi.load('picker', {'callback': onPickerApiLoad});
-
-
-
-                function onAuthApiLoad() {
-                window.gapi.auth.authorize(
-                    {
-                      'client_id': self.client_key(),
-                      'scope': self.scope(),
-                      'immediate': false
-                    },
-                    handleAuthResult);
-                }
-
-                function onPickerApiLoad() {
-                pickerApiLoaded = true;
-                }
-
-                function handleAuthResult(authResult) {
-                if (authResult && !authResult.error) {
-                  self.access_token(authResult.access_token);
-                  postToken = true;
-                  postAccessToken();
-                }
-            }});
+                  $.osf.postJSON(
+                    self.urls().create
+                    ).success(function(response){
+                        window.location.href = response.url;
+                        self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
+                    }).fail(function(){
+                        self.changeMessage('Could not authorize at this moment', 'text-danger');
+                    });
         };
 
         function postAccessToken()

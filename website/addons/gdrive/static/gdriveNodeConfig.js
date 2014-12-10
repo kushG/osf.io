@@ -18,6 +18,7 @@
         // TODO: Initialize observables, computes, etc. here
         self.nodeHasAuth = ko.observable(false);
         self.userHasAuth = ko.observable(false);
+        self.folder = ko.observable({name : null, path : null});
         self.api_key = ko.observable();
         self.client_key = ko.observable();
         self.scope = ko.observable();
@@ -25,6 +26,10 @@
         self.loadedSettings = ko.observable(false);
         self.urls = ko.observable({});
         self.ownerName = ko.observable();
+        // Currently selected folder, an Object of the form {name: ..., path: ...}
+        self.selected = ko.observable(null);
+        self.userIsOwner = ko.observable(false);
+
         var access_token;
 
 
@@ -96,37 +101,15 @@
         });
 
         self.createAuth = function(){
-            $.getScript('https://apis.google.com/js/api.js?onload=onApiLoad', function()
-            {
-                gapi.load('auth', {'callback': onAuthApiLoad});
-
-                function onAuthApiLoad() {
-                window.gapi.auth.authorize(
-                    {
-                      'client_id': self.client_key(),
-                      'scope': self.scope(),
-                      'immediate': false
-                    },
-                    handleAuthResult);
-                }
-
-                function handleAuthResult(authResult) {
-                if (authResult && !authResult.error) {
-                  access_token = authResult.access_token;
 
                     $.osf.postJSON(
-                    self.urls().create,
-                    {'access_token' : access_token}
-                    ).success(function(){
-                        window.location.reload();
+                    self.urls().create
+                    ).success(function(response){
+                        window.location.href = response.url;
                         self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
                     }).fail(function(){
                         self.changeMessage('Could not authorize at this moment', 'text-danger');
                     });
-
-                }}}
-            );
-
         };
 
 
@@ -196,9 +179,8 @@
         /** Calls Google picker API & selects a folder
          * to replace existing folder
          */
-        self.changeFolder = function()
-        {
-            $.getScript('https://apis.google.com/js/api.js?onload=onApiLoad', function() {
+        self.changeFolder = function() {
+            $.getScript('https://apis.google.com/js/api.js?onload=onApiLoad', function () {
 
                 gapi.load('picker', {'callback': onPickerApiLoad });
 
@@ -210,6 +192,7 @@
 
                     var picker = new google.picker.PickerBuilder().
                         addView(docsView).
+//                        addView(google.picker.ViewId.FOLDERS).
                         setOAuthToken(access_token).
                         setDeveloperKey(self.api_key()).
                         enableFeature(google.picker.Feature.MULTISELECT_ENABLED).
@@ -219,34 +202,192 @@
                 }
 
                 // callback for picker API
-                  function pickerCallback(data) {
-                      var url = 'nothing';
-                      if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
-                          var doc = data[google.picker.Response.DOCUMENTS][0];
-                          url = doc[google.picker.Document.URL];
-//                        driveFiles = [
-//                            {
-//                                name : doc[google.picker.Document.NAME],
-//                                id: doc[google.picker.Document.ID],
-//                                kind:'item',
-//                                link: doc[google.picker.Document.URL],
-//                                items: []
-//
-//                            }]
-                      }
-                      self.changeMessage('You picked: ' + url, 'text-primary');
+                function pickerCallback(data) {
+                    var url = 'nothing';
+                    if (data[google.picker.Response.ACTION] == google.picker.Action.PICKED) {
+                        var doc = data[google.picker.Response.DOCUMENTS][0];
+                        id = doc[google.picker.Document.ID];
+                        name = doc[google.picker.Document.NAME];
+                        console.log(id);
+                        console.log(name);
 
-                  }
+                        //Get folder & files using drive service
+                        $.getJSON(
+                            self.urls().get_folders,
+                            {
+                                'folder-id': id
+                            },
+                            function (response) {
+                                console.log(response);
+                                var result = response.result;
+                                if (result != null) {
+                                    var Items = []
+                                    for (var child = 0; child < result.length; child++) {
+                                        Items.push({
+                                            name: result[child].title,
+                                            id: result[child].id,
+                                            kind: "item"
+                                        })
+                                    }
+                                }
+                                console.log(Items);
 
+
+                                var files = [
+                                    {
+                                        id: id,
+                                        name: name,
+                                        kind: 'folder',
+                                        children: Items
+                                    }
+                                ]
+                                // Treebeard options
+                                var options = {
+                                    divID: "treebeard",
+                                    filesData: files,     // Array variable to be passed in
+                                    rowHeight: 35,
+                                    paginate: false,
+                                    showPaginate: false,
+                                    uploads: false,
+                                    columnTitles: function () {
+                                        return [
+                                            {
+                                                title: "ID",
+                                                width: "10%",
+                                                sortType: "text",
+                                                sort: false
+                                            },
+                                            {
+                                                title: "Name",
+                                                width: "60%",
+                                                sortType: "text",
+                                                sort: true
+                                            },
+                                            {
+                                                title: "Kind",
+                                                width: "15%",
+                                                sortType: "text",
+                                                sort: false
+                                            }
+                                        ]
+                                    },
+                                    resolveRows: function (item) {
+                                        return [
+                                            {
+                                                data: "id",
+                                                filter: false
+                                            },
+                                            {
+                                                data: "name",
+                                                filter: true,
+                                                folderIcons: true
+                                            },
+                                            {
+                                                data: "kind",
+                                                filter: false
+                                            }
+                                        ]
+                                    },
+                                    allowMove: false
+                                }
+
+                                var filebrowser = new Fangorn(options);
+                            });
+                        self.changeMessage('You picked: ' + name, 'text-primary');
+
+                    }
+
+
+                }
             });
-
         }
 
-        self.showFolders = ko.computed(function(){
-            return self.nodeHasAuth();
-        })
+//        self.showFolders = ko.computed(function(){
+//            return self.nodeHasAuth();
+//        })
+        self.showFolders = ko.observable(true);
+
+       /** Computed functions for the linked and selected folders' display text.*/
+
+        self.folderName = ko.computed(function() {
+            // Invoke the observables to ensure dependency tracking
+            var nodeHasAuth = self.nodeHasAuth();
+            var folder = self.folder();
+            return (nodeHasAuth && folder) ? folder.name : '';
+        });
+
+        self.selectedFolderName = ko.computed(function() {
+            var userIsOwner = self.userIsOwner();
+            var selected = self.selected();
+            return (userIsOwner && selected) ? selected.name : '';
+        });
+
+        /**
+         * Must be used to update radio buttons and knockout view model simultaneously
+         */
+        self.cancelSelection = function() {
+            self.selected(null);
+        };
+
+          /** Callback for chooseFolder action.
+        *   Just changes the ViewModel's self.selected observable to the selected
+        *   folder.
+        */
+        function onPickFolder(evt, item) {
+            evt.preventDefault();
+            self.selected({name: 'GoogleDrive' + item.data.path, path: item.data.path});
+            var filePath = $("[data-bind='attr.href: urls().files']").text().trim();
+            var filePathTokenized = filePath.split("/");
+            return false; // Prevent event propagation
+        }
 
 
+         /**
+         * Activates the Treebeard folder picker.
+         */
+        self.activatePicker = function() {
+            self.currentDisplay(self.PICKER);
+            // Only load folders if they haven't already been requested
+            if (!self.loadedFolders()) {
+                // Show loading indicator
+                //self.loading(true);
+                $(self.folderPicker).folderpicker({
+                    onPickFolder: onPickFolder,
+                    initialFolderName : self.folderName(),
+                    // Fetch Dropbox folders with AJAX
+                    filesData: self.urls().folders, // URL for fetching folders
+                    // Lazy-load each folder's contents
+                    // Each row stores its url for fetching the folders it contains
+                    fetchUrl: function(row) {
+                        return row.urls.folders;
+                    },
+                    resolveLazyloadUrl : function(tree, item){
+                        return item.data.urls.folders;
+                    },
+                    oddEvenClass : {
+                        odd : 'dropbox-folderpicker-odd',
+                        even : 'dropbox-folderpicker-even'
+                    },
+                    ajaxOptions: {
+                       error: function(xhr, textStatus, error) {
+                            self.loading(false);
+                            self.changeMessage('Could not connect to Dropbox at this time. ' +
+                                                'Please try again later.', 'text-warning');
+                            Raven.captureMessage('Could not GET get Dropbox contents.', {
+                                textStatus: textStatus,
+                                error: error
+                            });
+                        }
+                    },
+                    init: function() {
+                        // Hide loading indicator
+                        self.loading(false);
+                        // Set flag to prevent repeated requests
+                        self.loadedFolders(true);
+                    }
+                });
+            };
+        };
 
 
     };

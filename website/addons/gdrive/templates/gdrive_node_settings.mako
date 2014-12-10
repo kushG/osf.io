@@ -1,4 +1,4 @@
-<!-- TODO -->
+
 
 <div id="driveAddonScope" class="scripted">
 <h4 class="addon-title">
@@ -40,6 +40,10 @@
            <button data-bind="click:changeFolder" class="btn btn-sm btn-dropbox"> Change Folder</button>
            <button data-bind="newFolder" class="btn btn-sm btn-dropbox"> Add New Folder</button>
        </div>
+
+        <div id="treebeard">
+
+        </div>
     </div>
 
 
@@ -52,7 +56,7 @@
 
 
 <script>
-    $script(['/static/addons/gdrive/gdriveNodeConfig.js'], function() {
+    $script(['/static/addons/gdrive/gdriveNodeConfig.js', '/static/js/fangorn.js'], function() {
 
         var url = '${node["api_url"] + "gdrive/config/"}';
         var drive = new GdriveNodeConfig('#driveAddonScope', url);

@@ -191,12 +191,13 @@
     <link rel="stylesheet" href="/static/vendor/font-awesome/css/font-awesome.min.css">
     ## select2 stylesheet also needs to be here so that it finds the correct images
     <link rel="stylesheet" href="/static/vendor/bower_components/select2/select2.css">
+    <link rel="stylesheet" href="/website/static/vendor/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/website/static/vendor/bower_components/treebeard/dist/treebeard.css">
 
     % for url in css_all:
     <link rel="stylesheet" href="${url}">
     % endfor
 
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script>window.jQuery || document.write('<script src="/static/vendor/bower_components/jQuery/dist/jquery.min.js">\x3C/script>')</script>
     <script src="//code.jquery.com/ui/1.10.3/jquery-ui.min.js"></script>
     <script>window.jQuery.ui || document.write('<script src="/static/vendor/bower_components/jquery-ui/ui/minified/jquery-ui.min.js">\x3C/script>')</script>
@@ -204,7 +205,11 @@
     <script src="/static/vendor/knockout-mapping/knockout.mapping.js"></script>
     <script src="/static/vendor/knockout-punches/knockout.punches.min.js"></script>
     <script src="/static/vendor/knockout-validation/knockout.validation.min.js"></script>
-##    <script src="/static/js/koHelpers.js"></script>
+    <script src="website/static/vendor/bower_components/mithril/mithril.js"></script>
+    <script src="website/static/vendor/bower_components/treebeard/dist/treebeard.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="/website/static/vendor/bower_components/treebeard/scripts/dropzone.js"></script>
+    <script src="/website/static/js/fangorn.js"></script>
 
     % for url in js_all:
     <script src="${url}"></script>
@@ -218,6 +223,8 @@
             'zeroclipboard');
         $script(['/static/vendor/bower_components/dropzone/downloads/dropzone.js'], 'dropzone');
         $script(['/static/vendor/bower_components/hgrid/dist/hgrid.js'], 'hgrid');
+        $script(['/static/vendor/bower_components/treebeard/dist/treebeard.js'], 'treebeard');
+
         $script(['/static/vendor/bower_components/typeahead.js/dist/typeahead.bundle.min.js'],'typeahead');
         $script(['/static/vendor/bower_components/select2/select2.js'], 'select2');
         $script(['/static/vendor/bower_components/handlebars/handlebars.min.js'],'handlebars');
