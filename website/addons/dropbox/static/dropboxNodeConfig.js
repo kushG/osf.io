@@ -226,7 +226,7 @@
          */
         self.cancelSelection = function() {
             self.selected(null);
-            $(selector + ' input[type="radio"]').prop('checked', false);
+            // $(selector + ' input[type="radio"]').prop('checked', false);
         };
 
         /** Change the flashed message. */
@@ -314,34 +314,36 @@
         *   Just changes the ViewModel's self.selected observable to the selected
         *   folder.
         */
-        function onPickFolder(evt, row) {
+        function onPickFolder(evt, item) {
             evt.preventDefault();
-            self.selected({name: 'Dropbox' + row.path, path: row.path});
+            self.selected({name: 'Dropbox' + item.data.path, path: item.data.path});
             return false; // Prevent event propagation
         }
 
-        // Hide +/- icon for root folder
-        FolderPicker.Col.Name.showExpander = function(item) {
-            return item.path !== '/';
-        };
-
         /**
-         * Activates the HGrid folder picker.
+         * Activates the Treebeard folder picker.
          */
         self.activatePicker = function() {
             self.currentDisplay(self.PICKER);
             // Only load folders if they haven't already been requested
             if (!self.loadedFolders()) {
                 // Show loading indicator
-                self.loading(true);
+                //self.loading(true);
                 $(self.folderPicker).folderpicker({
                     onPickFolder: onPickFolder,
+                    initialFolderName : self.folderName(),
+                    initialFolderPath : 'Dropbox',
                     // Fetch Dropbox folders with AJAX
-                    data: self.urls().folders, // URL for fetching folders
+                    filesData: self.urls().folders, // URL for fetching folders
                     // Lazy-load each folder's contents
                     // Each row stores its url for fetching the folders it contains
-                    fetchUrl: function(row) {
-                        return row.urls.folders;
+
+                    resolveLazyloadUrl : function(tree, item){
+                        return item.data.urls.folders;
+                    },
+                    oddEvenClass : {
+                        odd : 'dropbox-folderpicker-odd',
+                        even : 'dropbox-folderpicker-even'
                     },
                     ajaxOptions: {
                        error: function(xhr, textStatus, error) {

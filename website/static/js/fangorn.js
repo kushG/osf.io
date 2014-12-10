@@ -18,9 +18,11 @@
         //asynconously calls these js files before calling the function (factory)
         define(['jquery', 'js/treebeard', 'bootstrap'], factory);
     } else if (typeof $script === 'function' ){
-        //A less robust way of calling js files, once it is done call fangorn
+        $script.ready(['dropzone', 'dropzone-patch', 'treebeard'], function() {
+            //A less robust way of calling js files, once it is done call fangorn
             global.Fangorn = factory(jQuery, global.Treebeard);
             $script.done('fangorn');
+        });
     }else {
         global.Fangorn = factory(jQuery, global.Treebeard);
     }
@@ -35,6 +37,9 @@
             configOption = item.data.addon ? resolveconfigOption.call(this, item, 'folderIcon', [item]) : undefined;                
 
         if (item.kind === 'folder') {
+            if (item.data.iconUrl){
+                return m('img', { src : item.data.iconUrl, style:{width:"16px", height:"auto"} });
+            }
             if (!item.data.permissions.view) {
                 return privateFolder; 
             }
@@ -92,7 +97,7 @@
     function _fangornResolveToggle(item){
         var toggleMinus = m('i.icon-minus', ' '),
             togglePlus = m('i.icon-plus', ' ');
-        if (item.kind === 'folder') {
+        if (item.kind === 'folder' && (item.children.length > 0 || item.data.addon ) ) {
             if (item.open) {
                 return toggleMinus;
             }
@@ -134,7 +139,8 @@
             name : file.name,
             kind : 'item',
             addon : parent.data.addon,
-            children : []
+            children : [],
+            data : { permissions : parent.data.permissions }
         };
         var newItem = treebeard.createItem(blankItem, parentID);
         var configOption = resolveconfigOption.call(treebeard, parent, 'uploadSending', [file, xhr, formData]);
@@ -151,11 +157,24 @@
     function _fangornDragOver (treebeard, event) {
         var dropzoneHoverClass = "fangorn-dz-hover"; 
         $('.tb-row').removeClass(dropzoneHoverClass);
-        $(event.target).closest('.tb-row').addClass(dropzoneHoverClass); 
+
+        var closestTarget = $(event.target).closest('.tb-row');
+        var itemID =  closestTarget.context.dataset.id;
+        var item = treebeard.find(itemID); 
+        if(itemID != undefined) {
+            if (item.data.urls) {
+                if (item.data.urls.upload != null && item.kind === 'folder') { 
+                    $(event.target).closest('.tb-row').addClass(dropzoneHoverClass);
+                }  
+            }
+        }
     }
 
     function _fangornComplete (treebeard, file) {
-        window.console.log("Complete", arguments);
+        var item = treebeard.dropzoneItemCache; 
+        var configOption = resolveconfigOption.call(treebeard, item, 'onUploadComplete', [item]);
+
+        window.console.log("Complete", configOption);
     }
 
     function _fangornDropzoneSuccess (treebeard, file, response) {
@@ -170,12 +189,12 @@
         //Dataverse : Object, actionTaken : file_uploaded
         var revisedItem = resolveconfigOption.call(treebeard, item.parent(), 'uploadSuccess', [file, item, response]);         
         if(!revisedItem && response){
-            if(response.actionTaken === 'file_added' || response.addon === 'dropbox' || response.addon === 'github' || response.addon === 'dataverse'){ // Base OSF response 
+            if(response.actionTaken === 'file_added' || response.addon === 'dropbox' || response.addon === 'github' || response.addon === 'dataverse'){ // Base OSF response
                 item.data = response;
-                item.notify = false;
-                treebeard.redraw();            
             }
         }
+        //item.notify = false;
+        treebeard.redraw();
     }
 
     function _fangornDropzoneError (treebeard, file, message) {
@@ -197,7 +216,8 @@
             window.event.cancelBubble = true;
         } 
         this.dropzone.hiddenFileInput.click();
-        this.dropzoneItemCache = item; 
+        this.dropzoneItemCache = item;
+        this.updateFolder(null, item); 
         window.console.log('Upload Event triggered', this, event,  item, col);
     }
 
@@ -209,7 +229,7 @@
             window.event.cancelBubble = true;
         }        
         window.console.log('Download Event triggered', this, event, item, col);
-        if(!item.data.addon){
+        if(item.data.addon === 'osfstorage'){
             item.data.downloads++;    
         }
         window.location = item.data.urls.download;
@@ -283,7 +303,7 @@
         var buttons = [];
 
         // Upload button if this is a folder
-        if (item.kind === 'folder' && item.data.permissions.edit) {
+        if (item.kind === 'folder' && item.data.addon && item.data.permissions.edit) {
             buttons.push({ 
                 'name' : '',
                 'icon' : 'icon-upload-alt',
@@ -313,7 +333,7 @@
         // Build the template for icons
         return buttons.map(function(btn){ 
             return m('span', { 'data-col' : item.id }, [ m('i', 
-                { 'class' : btn.css, style : btn.style, 'onclick' : function(){ btn.onclick.call(self, event, item, col); } },
+                { 'class' : btn.css, style : btn.style, 'onclick' : function(event){ btn.onclick.call(self, event, item, col); } },
                 [ m('span', { 'class' : btn.icon}, btn.name) ])
             ]);
         }); 
@@ -345,7 +365,7 @@
             sortInclude : false,
             custom : _fangornActionColumn
         }); 
-        if(!item.data.addon){
+        if(item.data.addon === 'osfstorage'){
            default_columns.push({
                 data : 'downloads',
                 sortInclude : false,
@@ -359,7 +379,11 @@
                 custom : function(){ return m(''); }
             });             
         }
-        var configOption = item.data.addon ? resolveconfigOption.call(this, item, 'resolveRows', [item]) : undefined;
+        var checkConfig = false;
+        if(item.data.addon || item.data.permissions) { // Workaround for figshare, TODO : Create issue
+            checkConfig = true;
+        }
+        var configOption = checkConfig ? resolveconfigOption.call(this, item, 'resolveRows', [item]) : undefined;
         return configOption || default_columns;
     }
 
@@ -433,28 +457,38 @@
                 return true;
             },
             addcheck : function (treebeard, item, file) {
-                window.console.log('Add check', this, treebeard, item, file);
-                if (item.data.permissions.edit){
-                    if(!_fangornFileExists.call(treebeard, item, file)){
-                        if(item.data.accept && item.data.accept.maxSize){
-                            var size = Math.round(file.size/10000)/100;
-                            var maxSize = item.data.accept.maxSize;  
-                            if(maxSize > size){
-                                return true;
+                //window.console.log('Add check', this, treebeard, item, file);
+                if(item.data.addon && item.kind === 'folder') {
+                    if (item.data.permissions.edit){
+                       if(!_fangornFileExists.call(treebeard, item, file)){
+                            if(item.data.accept && item.data.accept.maxSize){
+                                var size = Math.round(file.size/10000)/100;
+                                var maxSize = item.data.accept.maxSize;  
+                                if(maxSize >= size && size !== 0){
+                                    return true;
+                                }
+                                if(maxSize < size )  {
+                                    var msgText = 'One of the files is too large (' + size + ' MB). Max file size is ' + item.data.accept.maxSize + ' MB.' ; 
+                                    item.notify.update(msgText, 'warning', undefined, 3000);   
+                                }
+                                if(size === 0)  {
+                                    var msgText = 'Some files were ignored because they were empty.' ; 
+                                    item.notify.update(msgText, 'warning', undefined, 3000);   
+                                }
+                                return false;
                             }
-                            var msgText = 'File is too large (' + size + ' MB). Max file size is ' + item.data.accept.maxSize + ' MB.' ; 
-                            item.notify.update(msgText, 'warning', undefined, 3000);
-                            return false;
+                            return true;    
+                        } else {
+                            var msgText = 'File already exists.'; 
+                            item.notify.update(msgText, 'warning', 1, 3000);
                         }
-                        return true;    
+                        
                     } else {
-                        var msgText = 'File already exists.'; 
-                        item.notify.update(msgText, 'warning', 1, 3000);
+                        var msgText = 'You don\'t have permission to upload here'; 
+                        item.notify.update(msgText, 'warning', 1, 3000, 'animated flipInX');                    
                     }
-                } else {
-                    var msgText = 'You don\'t have permission to upload here'; 
-                    item.notify.update(msgText, 'warning', 1, 3000, 'animated flipInX');                    
                 }
+                
                 return false;
             },
             onselectrow : function (item) {
@@ -486,7 +520,6 @@
             }
     };
 
-
     function Fangorn(options) {
         this.options = $.extend({}, tbOptions, options);
         window.console.log('Options', this.options);
@@ -501,7 +534,7 @@
         },
         // Create the Treebeard once all addons have been configured
         _initGrid: function() {
-            this.grid = Treebeard.run(this.options);
+            this.grid = Treebeard(this.options);
             return this.grid;
         }
 
