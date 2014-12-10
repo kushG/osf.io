@@ -457,7 +457,7 @@
     }
 
     function _poModified (item) {
-
+        var personString;
         if (item.data.modifiedDelta === 0) {
             return m('span');
         }
