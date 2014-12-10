@@ -129,8 +129,7 @@ class TestAUser(OsfTestCase):
         res = form.submit().maybe_follow()
         # Sees dashboard with projects and watched projects
         assert_in('Projects', res)
-        assert_in('Watchlist', res)
-
+        assert_in('Watched Projects', res)
 
     def test_sees_flash_message_on_bad_login(self):
         # Goes to log in page
@@ -315,6 +314,26 @@ class TestAUser(OsfTestCase):
         td1 = res.html.find('td', text=re.compile(r'Public(.*?)Profile'))
         td2 = td1.find_next_sibling('td')
         assert_equal(td2.text, user2.display_absolute_url)
+
+    # Regression test for https://github.com/CenterForOpenScience/osf.io/issues/1320
+    @mock.patch('framework.auth.views.mails.send_mail')
+    def test_can_reset_password(self, mock_send_mail):
+        # A registered user
+        user = UserFactory()
+        # goes to the login page
+        url = web_url_for('auth_login')
+        res = self.app.get(url)
+        # and fills out forgot password form
+        form = res.forms['forgotPassword']
+        form['forgot_password-email'] = user.username
+        # submits
+        res = form.submit()
+        # mail was sent
+        mock_send_mail.assert_called
+        # gets 200 response
+        assert_equal(res.status_code, 200)
+        # URL is /forgotpassword
+        assert_equal(res.request.path, web_url_for('forgot_password'))
 
 
 class TestRegistrations(OsfTestCase):

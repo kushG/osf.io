@@ -26,7 +26,9 @@ CATEGORIES = ['storage']
 INCLUDE_JS = {
     'widget': [],
     'page': [],
+    'files': ['figshare-fangorn-config.js'],
 }
+
 
 INCLUDE_CSS = {
     'widget': [],
