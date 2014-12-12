@@ -142,24 +142,24 @@ def gdrive_import_user_auth(auth, node_addon, **kwargs):
 
 
 
-@must_be_logged_in
-def get_children(**kwargs):
-
-   auth = kwargs['auth']
-   user = auth.user
-
-   nid = kwargs.get('nid') or kwargs.get('pid')
-   node_addon= Node.load(nid)
-   node_settings = node_addon.get_addon('gdrive')
-   if node_settings:
-       user_settings = node_settings.user_settings
-       service = settings.SERVICE
-   folderid = request.args.get('folder-id')
-
-   result = retrieve_all_files(service, folderid)
-   return {
-      'result' : result
-   }
+# @must_be_logged_in
+# def get_children(**kwargs):
+#
+#    auth = kwargs['auth']
+#    user = auth.user
+#
+#    nid = kwargs.get('nid') or kwargs.get('pid')
+#    node_addon= Node.load(nid)
+#    node_settings = node_addon.get_addon('gdrive')
+#    if node_settings:
+#        user_settings = node_settings.user_settings
+#        service = settings.SERVICE
+#    folderid = request.args.get('folder-id')
+#
+#    result = retrieve_all_files(service, folderid)
+#    return {
+#       'result' : result
+#    }
 
 
 def retrieve_all_files(service, folderId):

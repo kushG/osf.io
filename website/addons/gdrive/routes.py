@@ -86,13 +86,13 @@ api_routes = {
             json_renderer,
         ),
 
-        Rule(
-            ['/project/<pid>/gdrive/get-children/',
-            '/project/<pid>/node/<nid>/gdrive/get-children/'],
-            'get',
-            views.get_children,
-            json_renderer
-        ),
+        # Rule(
+        #     ['/project/<pid>/gdrive/get-children/',
+        #     '/project/<pid>/node/<nid>/gdrive/get-children/'],
+        #     'get',
+        #     views.get_children,
+        #     json_renderer
+        # ),
 
         Rule(
             ['/project/<pid>/gdrive/config/',
