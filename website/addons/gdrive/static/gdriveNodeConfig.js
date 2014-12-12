@@ -15,28 +15,23 @@
     var ViewModel = function(url) {
         var self = this;
         self.url = url;
-        // TODO: Initialize observables, computes, etc. here
         self.nodeHasAuth = ko.observable(false);
         self.userHasAuth = ko.observable(false);
-        self.folder = ko.observable({name : null, path : null});
-        self.api_key = ko.observable();
-        self.client_key = ko.observable();
-        self.scope = ko.observable();
-        self.owner = ko.observable();
-        self.loadedSettings = ko.observable(false);
-        self.urls = ko.observable({});
-        self.ownerName = ko.observable();
-        // Currently selected folder, an Object of the form {name: ..., path: ...}
-        self.selected = ko.observable(null);
-        self.userIsOwner = ko.observable(false);
 
+        //Api key required for Google picker
+        self.api_key = ko.observable();
         var access_token;
 
+        self.owner = ko.observable();
+        self.ownerName = ko.observable();
+        self.urls = ko.observable();
+
+
+        self.loadedSettings = ko.observable(false);
 
         // Flashed messages
         self.message = ko.observable('');
         self.messageClass = ko.observable('text-info');
-
 
         // Get data from the config GET endpoint
         function onFetchSuccess(response) {
@@ -44,15 +39,11 @@
             self.nodeHasAuth(response.result.nodeHasAuth);
             self.userHasAuth(response.result.userHasAuth);
             self.urls(response.result.urls);
-            self.owner(response.result.urls.owner);
             self.ownerName(response.result.ownerName);
-            self.client_key(response.result.client_key);
+            self.owner(response.result.urls.owner);
             self.api_key(response.result.api_key);
-            self.scope(response.result.scope);
             access_token = response.result.access_token;
             self.loadedSettings(true);
-
-
         }
         function onFetchError(xhr, textstatus, error) {
             self.message('Could not fetch settings.');
@@ -65,7 +56,7 @@
         }
 
         fetch();
-       /** Change the flashed status message */
+         /** Change the flashed status message */
         self.changeMessage = function(text, css, timeout) {
             self.message(text);
             var cssClass = css || 'text-info';
@@ -78,18 +69,6 @@
                 }, timeout);
             }
         };
-
-
-         /**
-         * Whether or not to show the Import Access Token Button
-         */
-        self.showImport = ko.computed(function() {
-            // Invoke the observables to ensure dependency tracking
-            var userHasAuth = self.userHasAuth();
-            var nodeHasAuth = self.nodeHasAuth();
-            var loaded = self.loadedSettings();
-            return userHasAuth && !nodeHasAuth && loaded;
-        });
 
         /** Whether or not to show the Create Access Token button */
         self.showTokenCreateButton = ko.computed(function() {
@@ -113,7 +92,19 @@
         };
 
 
-         // Callback for when PUT request to import user access token
+
+         /**
+         * Whether or not to show the Import Access Token Button
+         */
+        self.showImport = ko.computed(function() {
+            // Invoke the observables to ensure dependency tracking
+            var userHasAuth = self.userHasAuth();
+            var nodeHasAuth = self.nodeHasAuth();
+            var loaded = self.loadedSettings();
+            return userHasAuth && !nodeHasAuth && loaded;
+        });
+
+        // Callback for when PUT request to import user access token
         function onImportSuccess(response) {
             var msg = response.message || 'Successfully imported access token from profile.';
             self.changeMessage(msg, 'text-success', 3000);
@@ -141,6 +132,7 @@
                 }
             });
         };
+
 
         /**
          * Send DELETE request to deauthorize this node.
@@ -175,6 +167,8 @@
                 }
             });
         };
+
+
 
         /** Calls Google picker API & selects a folder
          * to replace existing folder
@@ -291,8 +285,9 @@
                                     allowMove: false
                                 }
 
-                                var filebrowser = new Fangorn(options);
-                            });
+//                                var filebrowser = new Fangorn(options);
+                            }
+                        );
                         self.changeMessage('You picked: ' + name, 'text-primary');
 
                     }
@@ -302,92 +297,8 @@
             });
         }
 
-//        self.showFolders = ko.computed(function(){
-//            return self.nodeHasAuth();
-//        })
+
         self.showFolders = ko.observable(true);
-
-       /** Computed functions for the linked and selected folders' display text.*/
-
-        self.folderName = ko.computed(function() {
-            // Invoke the observables to ensure dependency tracking
-            var nodeHasAuth = self.nodeHasAuth();
-            var folder = self.folder();
-            return (nodeHasAuth && folder) ? folder.name : '';
-        });
-
-        self.selectedFolderName = ko.computed(function() {
-            var userIsOwner = self.userIsOwner();
-            var selected = self.selected();
-            return (userIsOwner && selected) ? selected.name : '';
-        });
-
-        /**
-         * Must be used to update radio buttons and knockout view model simultaneously
-         */
-        self.cancelSelection = function() {
-            self.selected(null);
-        };
-
-          /** Callback for chooseFolder action.
-        *   Just changes the ViewModel's self.selected observable to the selected
-        *   folder.
-        */
-        function onPickFolder(evt, item) {
-            evt.preventDefault();
-            self.selected({name: 'GoogleDrive' + item.data.path, path: item.data.path});
-            var filePath = $("[data-bind='attr.href: urls().files']").text().trim();
-            var filePathTokenized = filePath.split("/");
-            return false; // Prevent event propagation
-        }
-
-
-         /**
-         * Activates the Treebeard folder picker.
-         */
-        self.activatePicker = function() {
-            self.currentDisplay(self.PICKER);
-            // Only load folders if they haven't already been requested
-            if (!self.loadedFolders()) {
-                // Show loading indicator
-                //self.loading(true);
-                $(self.folderPicker).folderpicker({
-                    onPickFolder: onPickFolder,
-                    initialFolderName : self.folderName(),
-                    // Fetch Dropbox folders with AJAX
-                    filesData: self.urls().folders, // URL for fetching folders
-                    // Lazy-load each folder's contents
-                    // Each row stores its url for fetching the folders it contains
-                    fetchUrl: function(row) {
-                        return row.urls.folders;
-                    },
-                    resolveLazyloadUrl : function(tree, item){
-                        return item.data.urls.folders;
-                    },
-                    oddEvenClass : {
-                        odd : 'dropbox-folderpicker-odd',
-                        even : 'dropbox-folderpicker-even'
-                    },
-                    ajaxOptions: {
-                       error: function(xhr, textStatus, error) {
-                            self.loading(false);
-                            self.changeMessage('Could not connect to Dropbox at this time. ' +
-                                                'Please try again later.', 'text-warning');
-                            Raven.captureMessage('Could not GET get Dropbox contents.', {
-                                textStatus: textStatus,
-                                error: error
-                            });
-                        }
-                    },
-                    init: function() {
-                        // Hide loading indicator
-                        self.loading(false);
-                        // Set flag to prevent repeated requests
-                        self.loadedFolders(true);
-                    }
-                });
-            };
-        };
 
 
     };
@@ -398,7 +309,6 @@
         self.viewModel = new ViewModel(url);
         $.osf.applyBindings(self.viewModel, selector);
     }
+
     return GdriveNodeConfig;
-
-
 }));

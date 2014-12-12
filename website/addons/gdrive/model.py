@@ -5,19 +5,17 @@
 from modularodm import fields
 from website.addons.base import AddonUserSettingsBase, AddonNodeSettingsBase
 
+
 class AddonGdriveUserSettings(AddonUserSettingsBase):
     """Stores user-specific information, including the Oauth access
     token.
     """
-    access_token = fields.StringField()
-    oauth_service = fields.StringField()
-
+    access_token = fields.StringField(required=False)
     # TODO
 
     @property
     def has_auth(self):
-        return self.access_token is not None
-
+        return bool(self.access_token)
 
     def clear(self):
         self.access_token = None
@@ -25,7 +23,6 @@ class AddonGdriveUserSettings(AddonUserSettingsBase):
 
 class AddonGdriveNodeSettings(AddonNodeSettingsBase):
 
-    user = fields.StringField()
     user_settings = fields.ForeignField(
         'addongdriveusersettings', backref='authorized'
     )
@@ -40,14 +37,14 @@ class AddonGdriveNodeSettings(AddonNodeSettingsBase):
         # TODO: Any other addon-specific settings should be removed here.
         node = self.owner
         self.user_settings = None
-        # self.owner.adds_log(
-        #     action='gdrive_node_deauthorized',
-        #     params={
-        #         'project': node.parent_id,
-        #         'node': node._id,
-        #     },
-        #     auth=auth,
-        # )
+        self.owner.add_log(
+            action='gdrive_node_deauthorized',
+            params={
+                'project': node.parent_id,
+                'node': node._id,
+            },
+            auth=auth,
+        )
 
     def set_user_auth(self, user_settings):
         """Import a user's GDrive authentication and create a NodeLog.
@@ -97,7 +94,7 @@ class AddonGdriveNodeSettings(AddonNodeSettingsBase):
 
         :return: A tuple of the form (cloned_settings, message)
         """
-        clone, message = super(AddonGdriveNodeSettings, self).after_register(
+        clone, message = super(GdriveNodeSettings, self).after_register(
             node, registration, user, save=False
         )
         # Copy user_settings and add registration data
@@ -114,7 +111,7 @@ class AddonGdriveNodeSettings(AddonNodeSettingsBase):
 
         :return: A tuple of the form (cloned_settings, message)
         """
-        clone, _ = super(AddonGdriveNodeSettings, self).after_fork(
+        clone, _ = super(GdriveNodeSettings, self).after_fork(
             node=node, fork=fork, user=user, save=False
         )
 

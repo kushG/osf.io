@@ -1,21 +1,25 @@
-<!-- TODO -->
-<h4 class="addon-title">
-    Google Drive
-</h4>
+
 
 <div id="driveAddonScope"class="addon-settings scripted">
-    <!-- Delete Access Token Button-->
-    <div data-bind="if: userHasAuth() && loaded()">
-        <button data-bind="click:deleteKey" class="btn btn-danger">
-            Delete Access Token
-        </button>
-    </div>
-    <!-- Create Access Token Button -->
-    <div data-bind="if: !userHasAuth() && loaded()">
-        <button data-bind="click:createAuth" class="btn btn-primary">
-            Create Access Token
-        </button>
-    </div>
+<h4 class="addon-title">
+    Google Drive
+    <small>
+        <!-- Delete Access Token Button-->
+        <span data-bind="if: userHasAuth() && loaded()">
+            <a data-bind="click:deleteKey" class="text-danger pull-right addon-auth">
+                Delete Access Token
+            </a>
+        </span>
+        <!-- Create Access Token Button -->
+        <span data-bind="if: !userHasAuth() && loaded()">
+            <a data-bind="click:createAuth" class="text-primary pull-right addon-auth">
+                Create Access Token
+            </a>
+        </span>
+    </small>
+
+</h4>
+
 
     <!-- Flashed Messages -->
     <div class="help-block">
@@ -33,4 +37,4 @@
         var drive = new GdriveUserConfig('#driveAddonScope', url);
     });
 
-</script> 
+</script>

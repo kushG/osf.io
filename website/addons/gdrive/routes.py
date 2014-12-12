@@ -3,7 +3,9 @@
 """
 
 from framework.routing import Rule, json_renderer
-from website.addons.gdrive import views
+from website.routes import OsfWebRenderer
+
+from . import views
 
 # Routes that use the web renderer
 web_routes = {
@@ -39,7 +41,7 @@ api_routes = {
     'rules': [
 
 
-        #### Profile Settings ####
+        #### Profile settings ###
         Rule(
             ['/settings/gdrive'],
              'get',
@@ -48,37 +50,20 @@ api_routes = {
 
         ),
 
+
         Rule(
-            ['/settings/gdrive/auth'],
+            ['/settings/gdrive/oauth'],
             'delete',
-            views.drive_auth_delete_user,
+            views.drive_oauth_delete_user,
             json_renderer,
         ),
 
-
-        # Rule(
-        #     ['/settings/gdrive/auth'],
-        #     'post',
-        #     views.drive_auth,
-        #     json_renderer,
-        #     endpoint_suffix='_user'
-        # ),
         Rule(
             ['/settings/gdrive/oauth/'],
             'post',
             views.drive_oauth_start,
             json_renderer,
             endpoint_suffix='_user'
-        ),
-
-
-        Rule(
-            ['/project/<pid>/gdrive/oauth/',
-            '/project/<pid>/node/<nid>/gdrive/oauth/',
-            ],
-            'post',
-            views.drive_oauth_start,
-            json_renderer,
         ),
 
         Rule(
@@ -92,12 +77,13 @@ api_routes = {
 
         ##### Node settings #####
 
-        Rule(
-            ['/project/<pid>/gdrive/config/',
-            '/project/<pid>/node/<nid>/gdrive/config/'],
-            'get',
-            views.gdrive_config_get,
-            json_renderer
+         Rule(
+            ['/project/<pid>/gdrive/oauth/',
+            '/project/<pid>/node/<nid>/gdrive/oauth/',
+            ],
+            'post',
+            views.drive_oauth_start,
+            json_renderer,
         ),
 
         Rule(
@@ -105,6 +91,14 @@ api_routes = {
             '/project/<pid>/node/<nid>/gdrive/get-children/'],
             'get',
             views.get_children,
+            json_renderer
+        ),
+
+        Rule(
+            ['/project/<pid>/gdrive/config/',
+            '/project/<pid>/node/<nid>/gdrive/config/'],
+            'get',
+            views.gdrive_config_get,
             json_renderer
         ),
 

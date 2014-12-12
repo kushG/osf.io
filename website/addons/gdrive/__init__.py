@@ -1,5 +1,6 @@
 from website.addons.gdrive import routes, views, model
 
+
 MODELS = [
     model.AddonGdriveUserSettings,
     model.AddonGdriveNodeSettings,
@@ -21,7 +22,7 @@ CATEGORIES = ['storage']
 
 INCLUDE_JS = {
     'page': [],
-    'files': ['gdrive-fangorn-config.js']
+    'files': []
 }
 
 INCLUDE_CSS = {

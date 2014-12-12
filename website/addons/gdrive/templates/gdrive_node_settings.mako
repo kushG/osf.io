@@ -1,11 +1,10 @@
 
-
 <div id="driveAddonScope" class="scripted">
 <h4 class="addon-title">
     Google Drive
     <small class="authorized-by">
         <span data-bind="if:nodeHasAuth">
-            authorized by <a data-bind="attr.href: urls().owner">
+            authorized by <a data-bind="attr.href: owner">
             {{ownerName}}
             </a>
             % if not is_registration:
@@ -56,7 +55,7 @@
 
 
 <script>
-    $script(['/static/addons/gdrive/gdriveNodeConfig.js', '/static/js/fangorn.js'], function() {
+    $script(['/static/addons/gdrive/gdriveNodeConfig.js'], function() {
 
         var url = '${node["api_url"] + "gdrive/config/"}';
         var drive = new GdriveNodeConfig('#driveAddonScope', url);

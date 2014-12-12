@@ -2,10 +2,9 @@
  * Module that controls the Google Drive user settings. Includes Knockout view-model
  * for syncing data.
  */
-
 ;(function (global, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['knockout', 'jquery', 'osfutils', 'language','knockoutpunches'], factory);
+        define(['knockout', 'jquery', 'osfutils', 'knockoutpunches'], factory);
     } else {
         global.GdriveUserConfig  = factory(ko, jQuery);
     }
@@ -17,29 +16,21 @@
     var ViewModel = function(url) {
         var self = this;
         self.userHasAuth = ko.observable(false);
-        self.api_key = ko.observable();
-        self.client_key = ko.observable();
-        self.scope = ko.observable();
-        self.urls = ko.observable();
         self.loaded = ko.observable(false);
-        self.message = ko.observable('');
+        self.urls = ko.observable();
+
+        //Helper-class variables
+        self.message = ko.observable('')
         self.messageClass = ko.observable('text-info');
-        var pickerApiLoaded = false;
-        self.access_token = ko.observable();
-        var postToken = false;
 
 
-            $.ajax({
-            url: url, type: 'GET', dataType: 'json',
+        $.ajax({
+            url : url, type: 'GET', dataType: 'json',
             success: function(response) {
-                var data = response.result;
+                var data =response.result;
                 self.userHasAuth(data.userHasAuth);
                 self.urls(data.urls);
                 self.loaded(true);
-                self.api_key(data.api_key);
-                self.client_key(data.client);
-                self.scope(data.scope);
-//
             },
             error: function(xhr, textStatus, error){
                 self.changeMessage('Could not retrieve settings. Please refresh the page or ' +
@@ -54,7 +45,8 @@
         });
 
 
-       /** Change the flashed status message */
+
+         /** Change the flashed status message */
         self.changeMessage = function(text, css, timeout) {
             self.message(text);
             var cssClass = css || 'text-info';
@@ -69,31 +61,18 @@
         };
 
 
+        /** Create Authorization **/
         self.createAuth = function(){
-                  $.osf.postJSON(
-                    self.urls().create
-                    ).success(function(response){
-                        window.location.href = response.url;
-                        self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
-                    }).fail(function(){
-                        self.changeMessage('Could not authorize at this moment', 'text-danger');
-                    });
+          $.osf.postJSON(
+                self.urls().create
+                ).success(function(response){
+                    window.location.href = response.url;
+                    //TODO: Find a way to display this message
+//                    self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
+                }).fail(function(){
+                    self.changeMessage('Could not authorize at this moment', 'text-danger');
+                });
         };
-
-        function postAccessToken()
-        {
-            if(postToken)
-            {
-                $.osf.postJSON(
-                    self.urls().create,
-                    {'access_token': self.access_token()}
-                    ).done(function () {
-                        window.location.reload();
-                    }).fail(function(response){
-                        self.changeMessage('Could not authorize at this moment', 'text-danger');
-                    });
-            }
-        }
 
 
         /** Pop up confirm dialog for deleting user's access token. */
@@ -121,7 +100,7 @@
                 },
                 error: function(textStatus, error) {
                     self.changeMessage(language.deauthError, 'text-danger');
-                    Raven.captureMessage('Could not deauthorize Dropbox.', {
+                    Raven.captureMessage('Could not deauthorize Google Drive.', {
                         url: url,
                         textStatus: textStatus,
                         error: error
@@ -131,7 +110,8 @@
         }
 
 
-    };
+  };
+
 
     function GdriveUserConfig(selector, url) {
         // Initialization code
@@ -139,6 +119,7 @@
         self.viewModel = new ViewModel(url);
         $.osf.applyBindings(self.viewModel, selector);
     }
-        return GdriveUserConfig;
+
+    return GdriveUserConfig;
 
 }));

@@ -6,6 +6,8 @@ from tests.base import DbTestCase, URLLookup
 from tests.factories import AuthUserFactory
 
 
+from .utils import app, GdriveAddonTestCase
+
 lookup = URLLookup(app)
 
 class TestGdriveViews(DbTestCase):

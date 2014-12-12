@@ -1,7 +1,7 @@
 
 # Drive credentials
-CLIENT_ID = '695510114338-bkt0si671oqcomdjcju0pum61aqqt8ns.apps.googleusercontent.com'
-CLIENT_SECRET = '3furwLm0e5RND8ThImyGnI1J'
+CLIENT_ID = 'changeme'
+CLIENT_SECRET = 'changeme'
 
 # Check https://developers.google.com/drive/scopes for all available scopes
 OAUTH_SCOPE = ['https://www.googleapis.com/auth/drive']
@@ -9,10 +9,7 @@ OAUTH_SCOPE = ['https://www.googleapis.com/auth/drive']
 # Redirect URI for installed apps
 REDIRECT_URI = 'http://localhost:5000/api/v1/addons/gdrive/callback/'
 
-# Path to the file to upload
-FILENAME = 'document.txt'
-
-API_KEY = 'AIzaSyBRRNjRqhiSsRCTfqD_f73M6P_yf4NrCH4'
+API_KEY = 'changeme'
 
 OAUTH_ACCESS_TOKEN = 'changeme'
 

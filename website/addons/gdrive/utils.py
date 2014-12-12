@@ -3,12 +3,10 @@
 """
 from website.util import web_url_for
 import settings
-
 def serialize_urls(node_settings):
     node = node_settings.owner
     urls = {
-        # 'config': node.api_url_for('ctmdv_config_put'),
-        'create': node.api_url_for('drive_oauth_start'),
+        'create' : node.api_url_for('drive_oauth_start'),
         'importAuth': node.api_url_for('gdrive_import_user_auth'),
         'deauthorize': node.api_url_for('gdrive_deauthorize'),
         'get_folders' : node.api_url_for('get_children')
@@ -30,10 +28,8 @@ def serialize_settings(node_settings, current_user):
         'nodeHasAuth': node_settings.has_auth,
         'userIsOwner': user_is_owner,
         'userHasAuth': current_user_settings is not None and current_user_settings.has_auth,
-        'urls': serialize_urls(node_settings),
-        'client_key': settings.CLIENT_ID,
         'api_key' : settings.API_KEY,
-        'scope': settings.OAUTH_SCOPE
+        'urls': serialize_urls(node_settings)
     }
     if node_settings.has_auth:
     # Add owner's profile URL
