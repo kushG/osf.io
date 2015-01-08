@@ -11,6 +11,15 @@ mailing list on mailchimp. From the API docs:
     listBatchUnsubscribe() to remove old users from your List
 
 http://apidocs.mailchimp.com/api/how-to/sync-you-to-mailchimp.php
+
+Log:
+
+    Run on production by SL at 23:11 EST. 6680 users' `mailing_records` fields were
+    updated. 6674 users were subscribed to the Open Science Framework General
+    mailing list via the Mailchimp API. Running the migration the first time
+    failed due to a user having an GUID record with an incorrect referent (pointing
+    to the `osffile` collection rather than `user`). This GUID object was manually
+    modified. The migration was run again, and it finished successfully.
 """
 import sys
 
@@ -57,7 +66,12 @@ def serialize_user(user):
     """Return the formatted dict expected by the mailchimp batch subscribe endpoint.
     https://apidocs.mailchimp.com/api/2.0/lists/batch-subscribe.php
     """
-    return {'email': {'email': user.username}, 'email_type': 'html'}
+    return {'email': {'email': user.username},
+            'email_type': 'html',
+            'merge_vars': {
+                'fname': user.given_name,
+                'lname': user.family_name}
+            }
 
 
 def subscribe_users(users, dry=True):
@@ -109,7 +123,12 @@ class TestSyncEmail(OsfTestCase):
     def test_serialize_user(self):
         user = UserFactory()
         result = serialize_user(user)
-        assert_equal(result, {'email': {'email': user.username}, 'email_type': 'html'})
+        assert_equal(result, {'email': {'email': user.username},
+                              'email_type': 'html',
+                              'merge_vars': {
+                                  'fname': user.given_name,
+                                  'lname': user.family_name}
+                              })
 
     def test_get_users(self):
         users = list(get_users())
