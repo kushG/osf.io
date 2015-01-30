@@ -6,7 +6,7 @@
 
     <ol class="breadcrumb">
         <li><a href="{{ urls.files }}" data-bind="html: node"></a></li>
-        <li class="active overflow" data-bind="html: path"></li>
+        <li class="active overflow" data-bind="html: path.substring(1)"></li>
     </ol>
 
     <a
@@ -70,11 +70,11 @@
         },
         node: {
             title: '${node['title'] | h}',
+            id: '${node['id']}',
             urls: {
-                files:'${files_url}',
-                download:'${download_url}',
-                delete:'${delete_url}',
-                revisions:'${revisions_url}',
+                files: '${files_url}',
+                revisions: '${revisions_url}',
+                download: '${download_url}'
             }
         }
     });
@@ -84,5 +84,5 @@
 
 <%def name="javascript_bottom()">
 ${parent.javascript_bottom()}
-<script src="/static/public/js/osfstorage/file-detail.js"></script>
+<script src=${"/static/public/js/osfstorage/file-detail.js" | webpack_asset}></script>
 </%def>

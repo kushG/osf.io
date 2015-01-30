@@ -6,6 +6,9 @@ These settings can be overridden in local.py.
 
 import os
 import json
+import hashlib
+
+
 
 os_env = os.environ
 
@@ -18,10 +21,15 @@ BASE_PATH = parent_dir(HERE)  # website/ directory
 APP_PATH = parent_dir(BASE_PATH)
 ADDON_PATH = os.path.join(BASE_PATH, 'addons')
 STATIC_FOLDER = os.path.join(BASE_PATH, 'static')
-STATIC_URL_PATH = "/static"
+STATIC_URL_PATH = '/static'
+ASSET_HASH_PATH = os.path.join(APP_PATH, 'webpack-assets.json')
 ROOT = os.path.join(BASE_PATH, '..')
 
+# Hours before email confirmation tokens expire
+EMAIL_TOKEN_EXPIRATION = 24
+
 LOAD_BALANCER = False
+PROXY_ADDRS = []
 
 LOG_PATH = os.path.join(APP_PATH, 'logs')
 TEMPLATES_PATH = os.path.join(BASE_PATH, 'templates')
@@ -67,7 +75,7 @@ MAIL_PASSWORD = ''  # Set this in local.py
 # Mailchimp
 MAILCHIMP_API_KEY = None
 MAILCHIMP_WEBHOOK_SECRET_KEY = 'CHANGEME'  # OSF secret key to ensure webhook is secure
-ENABLE_EMAIL_SUBSCRIPTIONS = False
+ENABLE_EMAIL_SUBSCRIPTIONS = True
 MAILCHIMP_GENERAL_LIST = 'Open Science Framework General'
 
 # TODO: Override in local.py
@@ -212,3 +220,8 @@ GOOGLE_SITE_VERIFICATION = None
 
 # Pingdom
 PINGDOM_ID = None
+
+DEFAULT_HMAC_SECRET = 'changeme'
+DEFAULT_HMAC_ALGORITHM = hashlib.sha256
+WATERBUTLER_URL = 'http://localhost:7777'
+WATERBUTLER_ADDRS = ['127.0.0.1']
