@@ -13,16 +13,25 @@ var bootbox = require('bootbox');
 var language = require('osfLanguage').Addons.googledrive;
 var osfHelpers = require('osfHelpers');
 
-var ViewModel = function(url) {
+
+var GoogleDriveAccount = function(name, id) {
+    this.name = name;
+    this.id = id;
+}
+
+var ViewModel = function(name, url) {
     var self = this;
+    self.name = name;
+    self.accounts = ko.observableArray();
+
     self.userHasAuth = ko.observable(false);
     self.loaded = ko.observable(false);
     self.urls = ko.observable();
-    self.username = ko.observable();
 
     //Helper-class variables
     self.message = ko.observable('');
     self.messageClass = ko.observable('text-info');
+
 
     $.ajax({
         url: url,
@@ -31,7 +40,6 @@ var ViewModel = function(url) {
     }).done(function(response) {
         var data =response.result;
         self.userHasAuth(data.userHasAuth);
-        self.username(data.username);
         self.urls(data.urls);
         self.loaded(true);
     }).fail(function(xhr, textStatus, error) {
@@ -63,53 +71,86 @@ var ViewModel = function(url) {
 
     /** Create Authorization **/
     self.createAuth = function(){
-        $.osf.postJSON(
-            self.urls().create
-        ).success(function(response){
-            window.location.href = response.url;
-            //TODO: Find a way to display this message
-            //self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
-        }).fail(function(){
-            self.changeMessage('Could not authorize at this moment', 'text-danger');
-        });
+//        $.getJSON(
+//            self.urls().create
+//        ).success(function(response){
+//            window.location.href = response.url;
+//            //TODO: Find a way to display this message
+//            //self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
+//        }).fail(function(xhr, textStatus, error){
+//            self.changeMessage('Could not authorize at this moment', 'text-danger');
+//        });
+          window.oauthComplete = function() {
+              self.updateAccounts();
+              self.changeMessage('Successfully authorized Google Drive account', 'text-primary');
+          };
+
+          window.open('/oauth/connect/' + self.name + '/');
     };
 
     /** Pop up confirm dialog for deleting user's access token. */
-    self.deleteKey = function() {
+    self.deleteKey = function(account) {
         bootbox.confirm({
-            title: 'Delete Google Drive Token?',
+            title: 'Delete Google Drive Token for ' + account.name + '?',
             message: language.confirmDeauth,
             callback: function(confirmed) {
                 if (confirmed) {
-                    sendDeauth();
+                    sendDeauth(account);
                 }
             }
         });
     };
 
     /** Send DELETE request to deauthorize Drive */
-    function sendDeauth() {
-        return $.ajax({
-            url: self.urls().delete,
+    function sendDeauth(account) {
+//        return $.ajax({
+//            url: self.urls().delete,
+//            type: 'DELETE'
+//        }).done(function() {
+//            window.location.reload();
+//            self.changeMessage(language.deauthSuccess, 'text-info', 5000);
+//        }).fail(function(textStatus, error) {
+//            self.changeMessage(language.deauthError, 'text-danger');
+//            Raven.captureMessage('Could not deauthorize Google Drive.', {
+//                url: url,
+//                textStatus: textStatus,
+//                error: error
+//            });
+//        });
+
+        var url = '/api/v1/oauth/accounts/' + account.id + '/';
+        $.ajax({
+            url: url,
             type: 'DELETE'
-        }).done(function() {
-            window.location.reload();
-            self.changeMessage(language.deauthSuccess, 'text-info', 5000);
-        }).fail(function(textStatus, error) {
-            self.changeMessage(language.deauthError, 'text-danger');
-            Raven.captureMessage('Could not deauthorize Google Drive.', {
-                url: url,
-                textStatus: textStatus,
-                error: error
+        }).done(function(data) {
+            self.updateAccounts();
+        }).fail(function(xhr, status, error) {
+            Raven.captureMessage('Error while removing addon authorization for ' + account.id, {
+                url: url, status: status, error: error
             });
         });
     }
+
+    self.updateAccounts = function () {
+        var url = '/api/v1/settings/' + self.name + '/accounts/';
+        $.get(url).done(function(data) {
+            self.accounts(data.accounts.map(function(account) {
+                return new GoogleDriveAccount(account.display_name, account.id);
+            }));
+        }).fail(function(xhr, status, error) {
+            Raven.captureMessage('Error while updating addon account', {
+                url: url, status: status, error: error
+            });
+        });
+    }
+
 };
 
-function GoogleDriveUserConfig(selector, url) {
+function GoogleDriveUserConfig(name, selector, url) {
     // Initialization code
     var self = this;
-    self.viewModel = new ViewModel(url);
+    self.viewModel = new ViewModel(name, url);
+    self.viewModel.updateAccounts();
     $.osf.applyBindings(self.viewModel, selector);
 }
 

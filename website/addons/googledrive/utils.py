@@ -6,6 +6,7 @@ import logging
 from urllib import quote
 
 from website.util import web_url_for
+from website.addons.citations import utils
 
 
 logger = logging.getLogger(__name__)
@@ -66,10 +67,22 @@ def serialize_urls(node_settings):
     return {
         'files': node.web_url_for('collect_file_trees'),
         'config': node.api_url_for('googledrive_config_put'),
-        'create': node.api_url_for('googledrive_oauth_start'),
+        'create': node.api_url_for('oauth_connect',
+                            service_name=node.provider_name),
         'deauthorize': node.api_url_for('googledrive_deauthorize'),
         'importAuth': node.api_url_for('googledrive_import_user_auth'),
         'get_folders': node.api_url_for('googledrive_folders'),
+    }
+
+
+def user_accounts(user):
+    """ Gets a list of the accounts authorized by 'user' """
+    return {
+        'accounts': [
+            utils.serialize_account(each)
+            for each in user.external_accounts
+            if each.provider == 'googledrive'
+        ]
     }
 
 

@@ -105,7 +105,6 @@ class ExternalProvider(object):
         scope."""
 
         session = get_session()
-
         # create a dict on the session object if it's not already there
         if session.data.get("oauth_states") is None:
             session.data['oauth_states'] = {}

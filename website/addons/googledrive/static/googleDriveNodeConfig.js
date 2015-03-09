@@ -21,7 +21,7 @@ ko.punches.enableAll();
 /**
  * Knockout view model for the Google Drive node settings widget.
  */
-var ViewModel = function(url, selector, folderPicker) {
+var ViewModel = function(name, url, selector, folderPicker) {
     var self = this;
     self.url = url;
     self.loaded = false;
@@ -107,7 +107,7 @@ var ViewModel = function(url, selector, folderPicker) {
     });
 
     self.createAuth = function() {
-        return $.osf.postJSON(
+        return $.getJSON (
             self.urls().create
         ).success(function(response){
             window.location.href = response.url;
@@ -309,10 +309,10 @@ var ViewModel = function(url, selector, folderPicker) {
     };
 };
 
-function GoogleDriveNodeConfig(selector, url, folderPicker) {
+function GoogleDriveNodeConfig(name, selector, url, folderPicker) {
     // Initialization code
     var self = this;
-    self.viewModel = new ViewModel(url, selector, folderPicker);
+    self.viewModel = new ViewModel(name, url, selector, folderPicker);
     $.osf.applyBindings(self.viewModel, selector);
 }
 
