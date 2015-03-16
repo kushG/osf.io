@@ -75,7 +75,7 @@ class GoogleDriveNodeSettings(AddonOAuthNodeSettingsBase):
 
     @property
     def api(self):
-        """Autheenticated ExternalProvider instance"""
+        """Authenticated ExternalProvider instance"""
         if self._api is None:
             self._api = GoogleDriveProvider()
             self._api.account = self.external_account
