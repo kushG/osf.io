@@ -449,6 +449,7 @@ class AddonUserSettingsBase(AddonSettingsBase):
         """
         try:
             schema = self.config.settings_models['node']
+
         except KeyError:
             return []
         nodes_backref = self.get_backref_key(schema, 'authorized')
@@ -596,7 +597,6 @@ class AddonOAuthUserSettingsBase(AddonUserSettingsBase):
 
     def to_json(self, user):
         ret = super(AddonOAuthUserSettingsBase, self).to_json(user)
-
         ret['accounts'] = self.serializer(
             user_settings=self
         ).serialized_accounts

@@ -59,6 +59,7 @@ class GoogleDriveUserSettings(AddonOAuthUserSettingsBase):
     # using citations/utils for now. Should be generalized to addons/utils
     def to_json(self, user):
         ret = super(GoogleDriveUserSettings, self).to_json(user)
+
         ret['accounts'] = [
             serialize_account(each)
             for each in self._get_connected_accounts()
@@ -100,6 +101,7 @@ class GoogleDriveNodeSettings(AddonOAuthNodeSettingsBase):
             return folder.title
 
     # using citations/utils for now. Should be generalized to addons/utils
+    # TODO: Why am I used?
     @property
     def root_folder(self):
         root = serialize_folder(
@@ -115,11 +117,11 @@ class GoogleDriveNodeSettings(AddonOAuthNodeSettingsBase):
         return 'googledrive'
 
     def clear_auth(self):
-        self.mendeley_list_id = None
+        self.drive_folder_id = None
         return super(GoogleDriveNodeSettings, self).clear_auth()
 
     def set_auth(self, *args, **kwargs):
-        self.mendeley_list_id = None
+        self.drive_folder_id = None
         return super(GoogleDriveNodeSettings, self).set_auth(*args, **kwargs)
 
     def set_target_folder(self, drive_folder_id):
