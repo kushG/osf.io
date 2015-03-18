@@ -53,6 +53,8 @@ api_routes = {
             json_renderer,
         ),
 
+        #### Profile settings ###
+
         Rule(
             [
                 '/settings/googledrive/accounts/',
@@ -62,15 +64,6 @@ api_routes = {
             json_renderer,
         ),
 
-        #### Profile settings ###
-
-        Rule(
-            ['/settings/googledrive'],
-            'get',
-            views.config.googledrive_user_config_get,
-            json_renderer,
-
-        ),
 
         ##### Node settings #####
 

@@ -15,16 +15,16 @@ from website.project.decorators import (
 from website.addons.googledrive.utils import serialize_urls
 from website.addons.googledrive.utils import serialize_settings
 from website.addons.googledrive.utils import user_accounts
-
+from website.addons.googledrive.serializer import GoogleDriveSerializer
 
 @must_be_logged_in
 @must_have_addon('googledrive', 'node')
 @must_have_permission(permissions.WRITE)
 def googledrive_config_get(node_addon, auth, **kwargs):
     """API that returns the serialized node settings."""
-    return {
-        'result': serialize_settings(node_addon, auth.user),
-    }
+    result = GoogleDriveSerializer(node_settings=node_addon).serialized_node_settings
+    return result
+
 
 
 @must_not_be_registration
@@ -49,26 +49,7 @@ def googledrive_config_put(node_addon, auth, **kwargs):
 
 @must_be_logged_in
 def list_googledrive_user_acccounts(auth):
-    #TODO: Should be changed to make more generic
-    user = auth.user
-    return user_accounts(user)
-
-
-@must_be_logged_in
-@must_have_addon('googledrive', 'user')
-def googledrive_user_config_get(user_addon, auth, **kwargs):
     """View for getting a JSON representation of the logged-in user's
     Google Drive user settings.
     """
-    urls = {
-        'create': api_url_for('oauth_connect',
-                            service_name='googledrive'),
-        # 'delete': api_url_for('googledrive_oauth_delete_user'),
-    }
-
-    return {
-        'result': {
-            'urls': urls,
-            'userHasAuth': user_addon.has_auth,
-        },
-    }
+    return GoogleDriveSerializer(user_settings=auth.user.get_addon('googledrive')).serialized_user_settings

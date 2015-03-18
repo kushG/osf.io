@@ -224,13 +224,13 @@ var ViewModel = function(name, url, selector, folderPicker) {
             self.loaded = true;
             $(self.folderPicker).folderpicker({
                 onPickFolder: onPickFolder,
-                filesData: self.urls().get_folders,
+                filesData: self.urls().folders,
                 initialFolderPath : self.currentPath(),
                 // Lazy-load each folder's contents
                 // Each row stores its url for fetching the folders it contains
 
                 resolveLazyloadUrl : function(item){
-                    return item.data.urls.get_folders;
+                    return item.data.urls.folders;
                 },
                 ajaxOptions: {
                     error: function (xhr, textStatus, error) {

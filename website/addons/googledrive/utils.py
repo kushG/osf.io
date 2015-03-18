@@ -7,6 +7,7 @@ from urllib import quote
 
 from website.util import web_url_for
 from website.addons.citations import utils
+from serializer import OAuthAddonSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -99,7 +100,7 @@ def serialize_settings(node_settings, current_user):
         'nodeHasAuth': node_settings.has_auth,
         'userIsOwner': user_is_owner,
         'userHasAuth': current_user_settings is not None and current_user_settings.has_auth,
-        'urls': serialize_urls(node_settings)
+        'urls': OAuthAddonSerializer.addon_serialized_urls()
     }
 
     if node_settings.has_auth:
