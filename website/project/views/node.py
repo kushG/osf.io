@@ -370,25 +370,25 @@ def configure_comments(node, **kwargs):
 @must_be_contributor_or_public
 def view_project(auth, node, **kwargs):
     primary = '/api/v1' not in request.path
-    if request.args.get('_'):
-        """
-        Since this view function is called from all the pages for a public project,
-        Google Bot request handler function is called here.
-        """
-        content = get_static_snapshot(cache)
-        return {'content': content}
-
-    else:
-        ret = _view_project(node, auth, primary=primary)
-        ret['addon_capabilities'] = settings.ADDON_CAPABILITIES
-        # Collect the URIs to the static assets for addons that have widgets
-        ret['addon_widget_js'] = list(collect_addon_js(
-            node,
-            filename='widget-cfg.js',
-            config_entry='widget'
-        ))
-        ret.update(rubeus.collect_addon_assets(node))
-        return ret
+    # if request.args.get('_'):
+    #     """
+    #     Since this view function is called from all the pages for a public project,
+    #     Google Bot request handler function is called here.
+    #     """
+    #     content = get_static_snapshot(cache)
+    #     return {'content': content}
+    #
+    # else:
+    ret = _view_project(node, auth, primary=primary)
+    ret['addon_capabilities'] = settings.ADDON_CAPABILITIES
+    # Collect the URIs to the static assets for addons that have widgets
+    ret['addon_widget_js'] = list(collect_addon_js(
+        node,
+        filename='widget-cfg.js',
+        config_entry='widget'
+    ))
+    ret.update(rubeus.collect_addon_assets(node))
+    return ret
 
 # Expand/Collapse
 @must_be_valid_project

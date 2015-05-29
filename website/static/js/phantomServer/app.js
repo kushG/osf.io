@@ -7,7 +7,7 @@ app.get('/', function (req, res) {
     var url = req.query.url;
     console.log('Opening http://%s:%s with query parameters :', server.address().address, server.address().port);
     console.log(req.query);
-
+    console.log(req);
     phantom.create(function(ph){
 
        ph.createPage(function (page) {
